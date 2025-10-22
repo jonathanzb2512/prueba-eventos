@@ -1,0 +1,45 @@
+/* Fondo degradado azul oscuro → negro */
+.bg-gradient {
+  background: linear-gradient(135deg, #0f172a, #1e293b, #020617);
+}
+
+body {
+  background-color: #0f172a;
+  color: white;
+}
+
+/* 🚨 Arreglo final para modal borroso o tapado */
+
+/* Asegura que el modal y su contenido estén por encima de todo */
+.modal-backdrop {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  z-index: 1050 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: none !important; /* elimina desenfoque */
+}
+
+/* Caja del modal visible y clara */
+.modal-content {
+  z-index: 1060 !important;
+  background-color: #1e1e1e !important;
+  color: white !important;
+  border: 1px solid #555;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+  filter: none !important; /* elimina cualquier efecto de blur */
+  opacity: 1 !important; /* evita que se vea transparente */
+  transform: none !important;
+}
+
+/* Evitar que bootstrap agregue su propio backdrop */
+.modal-backdrop.fade,
+.modal-backdrop.show {
+  opacity: 1 !important;
+}
