@@ -1,31 +1,24 @@
 import { useState } from "react";
 import { useCompraBoletos } from "../hooks/useCompraBoletos";
-import { ModalCompra } from "./ModalCompra";
+import { useEventoEdicion } from "../hooks/useEventoEdicion";
 import { createCompra } from "../api/compras";
 import { useEventos } from "../context/EventosContext";
+import { ModalCompra } from "./ModalCompra";
+import { EditarEventoForm } from "./EditarEventoForm";
 
 export const EventCard = ({ evento }) => {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [comprador, setComprador] = useState("");
-  const [editando, setEditando] = useState(false);
-
-  const [formData, setFormData] = useState({
-    nombre: evento.nombre,
-    descripcion: evento.descripcion,
-    fecha: evento.fecha,
-    lugar: evento.lugar,
-    boletos_disponibles: evento.boletos_disponibles,
-    precio: evento.precio,
-  });
-
-  const sinBoletos = evento.boletos_disponibles <= 0;
 
   const { cantidad, total, formatoMoneda, handleCantidadChange, resetCompra } =
     useCompraBoletos(evento.precio);
 
-  const { handleBuy, handleDelete, handleUpdate, refreshEventos } = useEventos();
+  const { handleBuy, handleDelete } = useEventos();
+  const { editando, setEditando, formData, setFormData, guardarCambios } =
+    useEventoEdicion(evento);
 
-  // 🧾 Confirmar compra
+  const sinBoletos = evento.boletos_disponibles <= 0;
+
   const handleConfirmarCompra = async () => {
     if (!comprador.trim()) {
       alert("Por favor ingresa tu nombre antes de comprar.");
@@ -58,23 +51,9 @@ export const EventCard = ({ evento }) => {
     }
   };
 
-  // ✏️ Guardar cambios del evento
-  const handleGuardarEdicion = async () => {
-    try {
-      await handleUpdate(evento.id, formData);
-      alert("✅ Evento actualizado correctamente.");
-      setEditando(false);
-      await refreshEventos();
-    } catch (error) {
-      console.error("Error al actualizar evento:", error.response?.data || error);
-      alert("❌ Error al guardar los cambios. Revisa que todos los campos estén completos.");
-    }
-  };
-
   return (
     <>
       <div className="card bg-dark text-light border-secondary shadow-lg h-100">
-        {/* 🔹 Encabezado */}
         <div
           className="card-header text-center font-weight-bold"
           style={{ backgroundColor: "#0d6efd", color: "#fff" }}
@@ -93,72 +72,9 @@ export const EventCard = ({ evento }) => {
           )}
         </div>
 
-        {/* 🔹 Cuerpo */}
         <div className="card-body">
           {editando ? (
-            <>
-              <div className="mb-2">
-                <label>📅 Fecha:</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={formData.fecha}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fecha: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label>📍 Ubicación:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.lugar}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lugar: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label>📝 Descripción:</label>
-                <textarea
-                  className="form-control"
-                  value={formData.descripcion}
-                  onChange={(e) =>
-                    setFormData({ ...formData, descripcion: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label>💰 Precio:</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formData.precio}
-                  onChange={(e) =>
-                    setFormData({ ...formData, precio: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-2">
-                <label>🎟️ Boletos disponibles:</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formData.boletos_disponibles}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      boletos_disponibles: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-            </>
+            <EditarEventoForm formData={formData} setFormData={setFormData} />
           ) : (
             <>
               <p>
@@ -181,13 +97,12 @@ export const EventCard = ({ evento }) => {
           )}
         </div>
 
-        {/* 🔹 Botones de acción */}
         <div className="card-footer bg-transparent border-0 text-center">
           {editando ? (
             <>
               <button
                 className="btn btn-success m-2"
-                onClick={handleGuardarEdicion}
+                onClick={() => guardarCambios(evento.id)}
               >
                 💾 Guardar
               </button>
@@ -216,7 +131,6 @@ export const EventCard = ({ evento }) => {
           )}
         </div>
 
-        {/* 🔹 Botón de compra */}
         {!editando && (
           <div className="card-footer bg-transparent border-0 text-center">
             <button
@@ -232,7 +146,6 @@ export const EventCard = ({ evento }) => {
         )}
       </div>
 
-      {/* 🔹 Modal de compra */}
       {mostrarModal && (
         <ModalCompra
           evento={evento}

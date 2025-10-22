@@ -1,30 +1,11 @@
-import { createEvento } from "../api/eventos";
-import { useForm } from "../hooks/useForm";
+// src/components/EventForm.jsx
 import { InputField } from "./InputField";
+import { eventFormFields } from "../data/eventFormFields";
+import { useEventForm } from "../hooks/useEventForm";
 
 export const EventForm = ({ onAddEvent }) => {
-  const initialForm = {
-    nombre: "",
-    fecha: "",
-    lugar: "",
-    descripcion: "",
-    boletos_disponibles: "",
-    precio: "",
-  };
-
-  const { formState, onInputChange, onResetForm } = useForm(initialForm);
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if ( onAddEvent) await onAddEvent(formState);
-      onResetForm();
-    } catch (error) {
-        console.error("❌ Error al guardar el evento:", error);
-    }
-
-  };
+  const { formState, onInputChange, handleSubmit, isSubmitting } =
+    useEventForm(onAddEvent);
 
   return (
     <div className="d-flex align-items-center justify-content-center min-vh-100 bg-gradient">
@@ -41,73 +22,23 @@ export const EventForm = ({ onAddEvent }) => {
             Crear nuevo evento
           </h4>
 
-          <form onSubmit={onSubmit}>
-            <InputField
-              label="Nombre del evento"
-              name="nombre"
-              placeholder="Ej: Concierto de Rock"
-              value={formState.nombre}
-              onChange={onInputChange}
-              required
-            />
-
-            <InputField
-              label="Descripción"
-              name="descripcion"
-              type="textarea"
-              placeholder="Breve descripción del evento..."
-              value={formState.descripcion}
-              onChange={onInputChange}
-              required
-            />
-
-            <InputField
-              label="Fecha"
-              name="fecha"
-              type="date"
-              value={formState.fecha}
-              onChange={onInputChange}
-              required
-            />
-
-            <InputField
-              label="lugar"
-              name="lugar"
-              placeholder="Ej: Teatro Colón"
-              value={formState.lugar}
-              onChange={onInputChange}
-              required
-            />
-
-            <InputField
-              label="Cantidad total de boletos"
-              name="boletos_disponibles"
-              type="number"
-              placeholder="Ej: 1000"
-              min="1"
-              value={formState.boletos_disponibles}
-              onChange={onInputChange}
-              required
-            />
-
-            <InputField
-              label="Precio por boleto (USD)"
-              name="precio"
-              type="number"
-              placeholder="Ej: 50.00"
-              min="0"
-              step="0.01"
-              value={formState.precio}
-              onChange={onInputChange}
-              required
-            />
+          <form onSubmit={handleSubmit}>
+            {eventFormFields.map((field) => (
+              <InputField
+                key={field.name}
+                {...field}
+                value={formState[field.name]}
+                onChange={onInputChange}
+              />
+            ))}
 
             <div className="text-center">
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="btn btn-primary px-4 font-weight-bold"
               >
-                Crear evento
+                {isSubmitting ? "Guardando..." : "Crear evento"}
               </button>
             </div>
           </form>
